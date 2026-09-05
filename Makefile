@@ -1,13 +1,16 @@
 .PHONY: install run test help
 
+BACKEND_DIR = backend
+POETRY = poetry
+
 install:
-	cd backend && poetry install
+	cd $(BACKEND_DIR) && $(POETRY) install
 
 run:
-	cd backend && poetry run uvicorn main:app --reload
+	cd $(BACKEND_DIR) && $(POETRY) run uvicorn main:app --reload
 
 test:
-	cd backend && poetry run pytest
+	cd $(BACKEND_DIR) && $(POETRY) run pytest
 
 help:
 	@echo "Comandos disponiveis:"
