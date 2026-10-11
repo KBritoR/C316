@@ -1,4 +1,4 @@
-.PHONY: install run test test-cov help docker-up docker-down docker-build docker-logs docker-restart
+.PHONY: install run test test-unit test-integration test-cov help docker-up docker-down docker-build docker-logs docker-restart
 
 BACKEND_DIR = backend
 POETRY = poetry
@@ -11,6 +11,12 @@ run:
 
 test:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v
+
+test-unit:
+	cd $(BACKEND_DIR) && $(POETRY) run pytest -v tests/unit
+
+test-integration:
+	cd $(BACKEND_DIR) && $(POETRY) run pytest -v tests/integration
 
 test-cov:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v --cov=. --cov-report=term-missing
@@ -34,7 +40,9 @@ help:
 	@echo "Comandos disponiveis:"
 	@echo "  make install        - instala as dependencias"
 	@echo "  make run            - roda a aplicacao localmente"
-	@echo "  make test           - roda os testes"
+	@echo "  make test           - roda todos os testes"
+	@echo "  make test-unit      - roda somente os testes unitarios"
+	@echo "  make test-integration - roda somente os testes de integracao"
 	@echo "  make test-cov       - roda os testes com relatorio de cobertura"
 	@echo "  make docker-build   - builda as imagens docker"
 	@echo "  make docker-up      - sobe os containers em background"
