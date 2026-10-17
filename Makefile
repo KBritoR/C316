@@ -1,4 +1,4 @@
-.PHONY: install run test test-unit test-integration test-cov help docker-up docker-down docker-build docker-logs docker-restart
+.PHONY: install run test test-unit test-integration test-cov lint db-upgrade db-migration db-current help docker-up docker-down docker-build docker-logs docker-restart
 
 BACKEND_DIR = backend
 POETRY = poetry
@@ -7,7 +7,7 @@ install:
 	cd $(BACKEND_DIR) && $(POETRY) install
 
 run:
-	cd $(BACKEND_DIR) && $(POETRY) run uvicorn main:app --reload
+	cd $(BACKEND_DIR) && $(POETRY) run uvicorn app.main:app --reload
 
 test:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v
@@ -20,6 +20,18 @@ test-integration:
 
 test-cov:
 	cd $(BACKEND_DIR) && $(POETRY) run pytest -v --cov=. --cov-report=term-missing
+
+lint:
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check .
+
+db-upgrade:
+	cd $(BACKEND_DIR) && $(POETRY) run alembic upgrade head
+
+db-migration:
+	cd $(BACKEND_DIR) && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
+
+db-current:
+	cd $(BACKEND_DIR) && $(POETRY) run alembic current
 
 docker-build:
 	docker compose build
@@ -44,6 +56,10 @@ help:
 	@echo "  make test-unit      - roda somente os testes unitarios"
 	@echo "  make test-integration - roda somente os testes de integracao"
 	@echo "  make test-cov       - roda os testes com relatorio de cobertura"
+	@echo "  make lint           - roda o ruff"
+	@echo "  make db-upgrade     - aplica as migrations pendentes"
+	@echo "  make db-migration msg=\"...\" - gera uma nova migration (autogenerate)"
+	@echo "  make db-current     - mostra a revisao atual do banco"
 	@echo "  make docker-build   - builda as imagens docker"
 	@echo "  make docker-up      - sobe os containers em background"
 	@echo "  make docker-down    - derruba os containers"

@@ -12,7 +12,7 @@ def test_criar_servico(client):
     assert response.status_code == 201
     data = response.json()
     assert data["nome"] == "API Pagamentos"
-    assert data["id"] == 1
+    assert isinstance(data["id"], int)
 
 
 def test_criar_servico_com_url_invalida_retorna_422(client):
@@ -29,6 +29,17 @@ def test_listar_servicos_vazio(client):
     response = client.get("/servicos")
     assert response.status_code == 200
     assert response.json() == []
+
+
+def test_servico_persiste_entre_requisicoes(client):
+    criado = client.post(
+        "/servicos", json={"nome": "API Pagamentos", "url": "https://pagamentos.exemplo.com"}
+    ).json()
+
+    response = client.get(f"/servicos/{criado['id']}")
+
+    assert response.status_code == 200
+    assert response.json()["nome"] == "API Pagamentos"
 
 
 def test_listar_servicos_filtra_por_ativo(client):
@@ -50,7 +61,7 @@ def test_listar_servicos_filtra_por_ativo(client):
 
 
 def test_obter_servico_inexistente_retorna_404(client):
-    response = client.get("/servicos/999")
+    response = client.get("/servicos/999999")
     assert response.status_code == 404
 
 
@@ -72,7 +83,7 @@ def test_atualizar_servico_com_put(client):
 
 def test_atualizar_servico_inexistente_com_put_retorna_404(client):
     response = client.put(
-        "/servicos/999",
+        "/servicos/999999",
         json={"nome": "API Pagamentos", "url": "https://pagamentos.exemplo.com", "ativo": True},
     )
     assert response.status_code == 404
@@ -103,7 +114,7 @@ def test_patch_rejeita_valor_nulo(client):
 
 
 def test_patch_servico_inexistente_retorna_404(client):
-    response = client.patch("/servicos/999", json={"ativo": False})
+    response = client.patch("/servicos/999999", json={"ativo": False})
     assert response.status_code == 404
 
 
@@ -120,5 +131,5 @@ def test_deletar_servico(client):
 
 
 def test_deletar_servico_inexistente_retorna_404(client):
-    response = client.delete("/servicos/999")
+    response = client.delete("/servicos/999999")
     assert response.status_code == 404
