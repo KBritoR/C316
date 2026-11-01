@@ -63,11 +63,11 @@ Assim como o Ruff no backend, a CI falha se o código não estiver formatado: ro
 
 ## Testes
 
-| Tipo       | O que valida                                   | Ferramenta                  |
-|------------|------------------------------------------------|-----------------------------|
-| Unitário   | `validation.js`, `ServicoForm` e `ServicoList` isolados | Vitest + RTL (jsdom) |
+| Tipo       | O que valida                                            | Ferramenta                |
+| ---------- | ------------------------------------------------------- | ------------------------- |
+| Unitário   | `validation.js`, `ServicoForm` e `ServicoList` isolados | Vitest + RTL (jsdom)      |
 | Integração | formulário + lista + filtro funcionando juntos no `App` | Vitest + RTL + user-event |
-| E2E        | fluxo completo no navegador real                | Playwright (Chromium)       |
+| E2E        | fluxo completo no navegador real                        | Playwright (Chromium)     |
 
 ## CI
 
