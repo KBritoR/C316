@@ -21,3 +21,26 @@ subir só o banco e configurar o `DATABASE_URL`.
 O workflow em `.github/workflows/ci-backend.yml` sobe um PostgreSQL de serviço, instala as
 dependências com Poetry, roda o lint (`ruff`), aplica as migrations com Alembic e executa a
 suíte de testes com Pytest automaticamente em todo `push` e `pull_request`.
+
+## Frontend
+
+Cadastro de serviços em React + Vite + Tailwind CSS, com Biome (lint/formatação), Vitest +
+React Testing Library (unitários e integração) e Playwright (E2E). Ainda não consome a API:
+os dados ficam em memória. Detalhes em [frontend/README.md](frontend/README.md).
+
+### Começando rápido
+
+```bash
+make frontend-install   # npm ci
+make frontend-dev       # http://localhost:5173
+make frontend-check     # lint + formatacao
+make frontend-test      # Vitest
+make frontend-test-e2e  # Playwright
+make check-all          # backend + frontend
+```
+
+### CI
+
+O workflow em `.github/workflows/ci-frontend.yml` roda em pull requests que alterem
+`frontend/**`, com um job de lint/formatação (Biome) e um job de testes (Vitest, build e
+Playwright) que só executa depois que o lint passa.
