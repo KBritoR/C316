@@ -15,6 +15,16 @@ def test_criar_servico(client):
     assert isinstance(data["id"], int)
 
 
+def test_criar_servico_com_nome_duplicado_retorna_409(client):
+    dados = {"nome": "API Pagamentos", "url": "https://pagamentos.exemplo.com"}
+    client.post("/servicos", json=dados)
+
+    response = client.post("/servicos", json=dados)
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Já existe um serviço com esse nome"
+
+
 def test_criar_servico_com_url_invalida_retorna_422(client):
     response = client.post("/servicos", json={"nome": "API Invalida", "url": "ftp://exemplo.com"})
     assert response.status_code == 422
@@ -72,7 +82,11 @@ def test_atualizar_servico_com_put(client):
 
     response = client.put(
         f"/servicos/{criado['id']}",
-        json={"nome": "API Pagamentos v2", "url": "https://pagamentos.exemplo.com/v2", "ativo": False},
+        json={
+            "nome": "API Pagamentos v2",
+            "url": "https://pagamentos.exemplo.com/v2",
+            "ativo": False,
+        },
     )
 
     assert response.status_code == 200

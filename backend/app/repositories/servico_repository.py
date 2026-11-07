@@ -23,6 +23,9 @@ class ServicoRepository:
     def get(self, servico_id: int) -> ServicoModel | None:
         return self.db.get(ServicoModel, servico_id)
 
+    def get_by_nome(self, nome: str) -> ServicoModel | None:
+        return self.db.query(ServicoModel).filter(ServicoModel.nome == nome).first()
+
     def update(self, servico: ServicoModel, nome: str, url: str, ativo: bool) -> ServicoModel:
         servico.nome = nome
         servico.url = url

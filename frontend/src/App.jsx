@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ServicoForm from "./components/ServicoForm";
 import ServicoList from "./components/ServicoList";
+import { createServico, deleteServico, listServicos, updateServico } from "./services/servicos";
 
 const FILTROS = [
   { valor: "todos", rotulo: "Todos" },
@@ -10,20 +11,42 @@ const FILTROS = [
 
 export default function App() {
   const [servicos, setServicos] = useState([]);
-  const [proximoId, setProximoId] = useState(1);
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState("");
+  const [erroAcao, setErroAcao] = useState("");
   const [filtro, setFiltro] = useState("todos");
 
-  function adicionarServico(servico) {
-    setServicos((atuais) => [...atuais, { id: proximoId, ...servico }]);
-    setProximoId((id) => id + 1);
+  useEffect(() => {
+    listServicos()
+      .then(setServicos)
+      .catch((error) => setErroCarregamento(error.message))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  async function adicionarServico(dados) {
+    const criado = await createServico(dados);
+    setServicos((atuais) => [...atuais, criado]);
   }
 
-  function alternarAtivo(id) {
-    setServicos((atuais) => atuais.map((s) => (s.id === id ? { ...s, ativo: !s.ativo } : s)));
+  async function alternarAtivo(id) {
+    const servico = servicos.find((s) => s.id === id);
+    setErroAcao("");
+    try {
+      const atualizado = await updateServico(id, { ativo: !servico.ativo });
+      setServicos((atuais) => atuais.map((s) => (s.id === id ? atualizado : s)));
+    } catch (error) {
+      setErroAcao(error.message);
+    }
   }
 
-  function removerServico(id) {
-    setServicos((atuais) => atuais.filter((s) => s.id !== id));
+  async function removerServico(id) {
+    setErroAcao("");
+    try {
+      await deleteServico(id);
+      setServicos((atuais) => atuais.filter((s) => s.id !== id));
+    } catch (error) {
+      setErroAcao(error.message);
+    }
   }
 
   const visiveis = servicos.filter((s) => {
@@ -32,13 +55,27 @@ export default function App() {
     return true;
   });
 
+  function renderLista() {
+    if (carregando) {
+      return <p className="text-slate-500">Carregando serviços...</p>;
+    }
+    if (erroCarregamento) {
+      return (
+        <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700 ring-1 ring-red-200">
+          {erroCarregamento}
+        </p>
+      );
+    }
+    return <ServicoList servicos={visiveis} onToggle={alternarAtivo} onRemove={removerServico} />;
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-3xl space-y-8">
         <header>
           <h1 className="text-3xl font-bold text-slate-900">Cadastro de Serviços</h1>
           <p className="mt-1 text-slate-600">
-            Os dados ficam só em memória e somem ao recarregar a página.
+            Os serviços são salvos na API e persistem no PostgreSQL.
           </p>
         </header>
 
@@ -69,7 +106,13 @@ export default function App() {
             </fieldset>
           </div>
 
-          <ServicoList servicos={visiveis} onToggle={alternarAtivo} onRemove={removerServico} />
+          {erroAcao && (
+            <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-700 ring-1 ring-red-200">
+              {erroAcao}
+            </p>
+          )}
+
+          {renderLista()}
         </section>
       </div>
     </main>

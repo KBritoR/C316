@@ -6,21 +6,32 @@ const ESTADO_INICIAL = { nome: "", url: "", ativo: true };
 export default function ServicoForm({ onAdd }) {
   const [dados, setDados] = useState(ESTADO_INICIAL);
   const [erros, setErros] = useState({});
+  const [erroEnvio, setErroEnvio] = useState("");
+  const [salvando, setSalvando] = useState(false);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
     setDados((atual) => ({ ...atual, [name]: type === "checkbox" ? checked : value }));
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+    setErroEnvio("");
     const novosErros = validarServico(dados);
     setErros(novosErros);
     if (Object.keys(novosErros).length > 0) {
       return;
     }
-    onAdd({ nome: dados.nome.trim(), url: dados.url.trim(), ativo: dados.ativo });
-    setDados(ESTADO_INICIAL);
+
+    setSalvando(true);
+    try {
+      await onAdd({ nome: dados.nome.trim(), url: dados.url.trim(), ativo: dados.ativo });
+      setDados(ESTADO_INICIAL);
+    } catch (error) {
+      setErroEnvio(error.message);
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -84,11 +95,18 @@ export default function ServicoForm({ onAdd }) {
         Ativo
       </label>
 
+      {erroEnvio && (
+        <p role="alert" className="text-sm text-red-600">
+          {erroEnvio}
+        </p>
+      )}
+
       <button
         type="submit"
-        className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 sm:w-auto"
+        disabled={salvando}
+        className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
-        Cadastrar
+        {salvando ? "Salvando..." : "Cadastrar"}
       </button>
     </form>
   );

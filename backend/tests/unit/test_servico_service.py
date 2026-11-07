@@ -2,7 +2,7 @@ import pytest
 from fake_repository import FakeServicoRepository
 
 from app.schemas.servico import Servico, ServicoUpdate
-from app.services.servico_service import ServicoService
+from app.services.servico_service import NomeDuplicadoError, ServicoService
 
 
 @pytest.fixture
@@ -35,7 +35,8 @@ def test_atualizar_substitui_todos_os_campos(service):
     criado = service.criar(Servico(nome="API Pagamentos", url="https://pagamentos.exemplo.com"))
 
     atualizado = service.atualizar(
-        criado.id, Servico(nome="API Pagamentos v2", url="https://pagamentos.exemplo.com/v2", ativo=False)
+        criado.id,
+        Servico(nome="API Pagamentos v2", url="https://pagamentos.exemplo.com/v2", ativo=False),
     )
 
     assert atualizado.nome == "API Pagamentos v2"
@@ -71,3 +72,28 @@ def test_deletar_remove_servico(service):
 
 def test_deletar_retorna_false_para_servico_inexistente(service):
     assert service.deletar(999) is False
+
+
+def test_criar_rejeita_nome_duplicado(service):
+    service.criar(Servico(nome="API Pagamentos", url="https://pagamentos.exemplo.com"))
+
+    with pytest.raises(NomeDuplicadoError):
+        service.criar(Servico(nome="API Pagamentos", url="https://outra.exemplo.com"))
+
+
+def test_atualizar_parcialmente_rejeita_nome_de_outro_servico(service):
+    service.criar(Servico(nome="API Pagamentos", url="https://pagamentos.exemplo.com"))
+    legado = service.criar(Servico(nome="API Legado", url="https://legado.exemplo.com"))
+
+    with pytest.raises(NomeDuplicadoError):
+        service.atualizar_parcialmente(legado.id, ServicoUpdate(nome="API Pagamentos"))
+
+
+def test_atualizar_permite_manter_o_proprio_nome(service):
+    criado = service.criar(Servico(nome="API Pagamentos", url="https://pagamentos.exemplo.com"))
+
+    atualizado = service.atualizar(
+        criado.id, Servico(nome="API Pagamentos", url="https://nova.exemplo.com", ativo=False)
+    )
+
+    assert atualizado.url == "https://nova.exemplo.com"

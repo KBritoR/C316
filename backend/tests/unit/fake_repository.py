@@ -29,6 +29,9 @@ class FakeServicoRepository:
     def get(self, servico_id: int) -> FakeServico | None:
         return self._dados.get(servico_id)
 
+    def get_by_nome(self, nome: str) -> FakeServico | None:
+        return next((s for s in self._dados.values() if s.nome == nome), None)
+
     def update(self, servico: FakeServico, nome: str, url: str, ativo: bool) -> FakeServico:
         servico.nome = nome
         servico.url = url

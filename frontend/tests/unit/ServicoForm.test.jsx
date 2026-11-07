@@ -21,6 +21,39 @@ describe("ServicoForm", () => {
     expect(screen.getByLabelText("Nome")).toHaveValue("");
   });
 
+  it("mostra o erro do onAdd e mantém os campos preenchidos", async () => {
+    const user = userEvent.setup();
+    const onAdd = vi.fn().mockRejectedValue(new Error("Já existe um serviço com esse nome"));
+    render(<ServicoForm onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Nome"), "API Pagamentos");
+    await user.type(screen.getByLabelText("URL"), "https://pagamentos.exemplo.com");
+    await user.click(screen.getByRole("button", { name: "Cadastrar" }));
+
+    expect(await screen.findByText("Já existe um serviço com esse nome")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nome")).toHaveValue("API Pagamentos");
+  });
+
+  it("desabilita o botão e mostra 'Salvando...' enquanto envia", async () => {
+    const user = userEvent.setup();
+    let concluir;
+    const onAdd = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          concluir = resolve;
+        }),
+    );
+    render(<ServicoForm onAdd={onAdd} />);
+
+    await user.type(screen.getByLabelText("Nome"), "API Pagamentos");
+    await user.type(screen.getByLabelText("URL"), "https://pagamentos.exemplo.com");
+    await user.click(screen.getByRole("button", { name: "Cadastrar" }));
+
+    expect(screen.getByRole("button", { name: "Salvando..." })).toBeDisabled();
+    concluir();
+    expect(await screen.findByRole("button", { name: "Cadastrar" })).toBeEnabled();
+  });
+
   it("mostra erros e não chama onAdd quando os campos são inválidos", async () => {
     const user = userEvent.setup();
     const onAdd = vi.fn();

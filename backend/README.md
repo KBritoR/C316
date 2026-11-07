@@ -45,15 +45,15 @@ A API precisa de um PostgreSQL rodando e acessível pela variável de ambiente `
 Via Docker Compose (recomendado, já usa a rede do compose e o host `db`):
 
 ```bash
-make docker-up      # ou: docker compose up -d --build
+make up-build      # sobe db, api e frontend e espera todos ficarem healthy
 ```
 
-O container do backend aplica as migrations automaticamente antes de subir o servidor.
+O container da `api` aplica as migrations automaticamente antes de subir o servidor.
 
 Rodando o backend fora do Docker (ex.: `make run`), suba só o banco e use `localhost`:
 
 ```bash
-docker compose up -d db
+make db-up         # ou: docker compose up -d --wait db
 ```
 
 O valor padrão de `DATABASE_URL` em `app/core/config.py` já aponta para
@@ -65,7 +65,16 @@ export DATABASE_URL="postgresql+psycopg://usuario:senha@host:5432/banco"
 ```
 
 Dentro da rede do Compose, a API **não** deve usar `localhost` — é o `docker-compose.yml`
-quem já injeta a URL correta (com o host `db`) no container do backend.
+quem já injeta a URL correta (com o host `db`) no container da `api`.
+
+## CORS
+
+O frontend (`http://localhost:5173`) e a API (`http://localhost:8000`) têm portas diferentes,
+então são origens diferentes, e o navegador bloqueia a resposta a menos que a API autorize a
+origem. `app/main.py` registra o `CORSMiddleware` com as origens lidas de `CORS_ORIGINS`
+(`app/core/config.py`, lista separada por vírgulas, padrão
+`http://localhost:5173,http://127.0.0.1:5173`). Nada de `*`: só liberamos o que o frontend
+realmente usa.
 
 ## Migrations (Alembic)
 
@@ -92,7 +101,9 @@ make db-upgrade
 | url    | string | obrigatório, precisa começar com `http://` ou `https://` |
 | ativo  | bool   | opcional na criação (padrão `true`)           |
 
-Dados inválidos retornam `422`. Um serviço inexistente retorna `404`.
+Dados inválidos retornam `422`. Um serviço inexistente retorna `404`. O nome é único:
+cadastrar (ou renomear para) um nome que já existe retorna `409` com
+`{"detail": "Já existe um serviço com esse nome"}`, mensagem que o frontend mostra ao usuário.
 
 ## Endpoints
 
@@ -130,8 +141,8 @@ curl -X PATCH http://localhost:8000/servicos/1 \
   -d '{"ativo": false}'
 ```
 
-Validar que os dados persistem: crie um serviço, reinicie o container do backend
-(`docker compose restart backend`) e confirme que `GET /servicos` ainda retorna o registro.
+Validar que os dados persistem: crie um serviço, reinicie o container da API
+(`docker compose restart api`) e confirme que `GET /servicos` ainda retorna o registro.
 
 ## Comandos
 
@@ -143,6 +154,8 @@ make test-unit           # roda so os testes unitarios (tests/unit, sem banco)
 make test-integration    # roda so os testes de integracao (tests/integration, contra o Postgres)
 make test-cov            # roda os testes com relatorio de cobertura
 make lint                # roda o ruff
+make format              # formata o codigo com o ruff
+make db-up               # sobe so o Postgres
 make db-upgrade          # aplica as migrations pendentes
 make db-migration msg="descricao"  # gera uma nova migration
 make db-current           # mostra a revisao atual do banco
@@ -161,5 +174,8 @@ poetry run alembic upgrade head         # aplica migrations
 ```
 
 Os testes de integração (e a aplicação em si) esperam um PostgreSQL acessível via
-`DATABASE_URL` com as migrations já aplicadas — suba o banco com `docker compose up -d db`
-e rode `make db-upgrade` antes de `make test`/`make test-integration`.
+`DATABASE_URL` com as migrations já aplicadas — suba o banco com `make db-up` e rode
+`make db-upgrade` antes de `make test`/`make test-integration`.
+
+Os testes de integração incluem dois testes de CORS (`tests/integration/test_cors.py`): a origem
+do frontend é liberada no preflight e uma origem desconhecida não é.
