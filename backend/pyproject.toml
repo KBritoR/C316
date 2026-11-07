@@ -8,11 +8,32 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn (>=0.52.4,<0.53.0)"
+    "uvicorn (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.1.5,<3.0.0)",
+    "psycopg[binary] (>=3.3.6,<4.0.0)",
+    "alembic (>=1.20.0,<2.0.0)"
 ]
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+httpx = "^0.28.0"
+pytest-cov = "^6.0.0"
+ruff = "^0.17.1"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# B008: Depends(...) como valor padrao e o jeito idiomatico do FastAPI de
+# injetar dependencias, nao um bug.
+ignore = ["B008"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
