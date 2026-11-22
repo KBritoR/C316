@@ -1,7 +1,7 @@
 [project]
-name = "backend"
+name = "estoque-api"
 version = "0.1.0"
-description = "Atividade 1 c316"
+description = "API do sistema de controle de estoque"
 authors = [
     {name = "Kawan"}
 ]
