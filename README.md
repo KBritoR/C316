@@ -1,11 +1,41 @@
-Título e tema: Controle de estoque para restaurantes.
+## Tema e objetivo
+Controle de estoque para restaurantes.
 
-Objetivo: O objetivo é conseguirmos ter uma organização melhor e termos controle da mercadoria.
+## Funcionalidades
+Já implementadas:
+Regra de saldo: entrada soma, saída subtrai e a saída não pode deixar o estoque negativo
+Alerta de estoque baixo
 
-O cliente está com problemas para ter controle sobre suas matérias-primas, o que acaba deixando-o na mão em momentos de pico do seu estabelecimento.
+Planejadas:
+Cadastro, edição, consulta e exclusão de produtos
+Registro de entradas e saídas
+Resumo do estoque
 
-Funcionalidades planejadas: Vamos ter um sistema que vai ter a opção de inserir novos produtos, retirar produtos (entrada e saída), alerta de estoque mínimo e o resumo do estoque.
+## Tecnologias
+Python 3.14, FastAPI, Poetry
+PostgreSQL 16
+Docker e Docker Compose
+Pytest e Ruff
+GitHub Actions
+Makefile
 
-Tecnologias até agora: Python 3.14, FastAPI, Poetry e Makefile.
+## Pré-requisitos
+ocker Desktop
+Python 3.14 e Poetry 
+make
 
-Como rodar: make install, make run e acessar http://localhost:8000/docs.
+## Variáveis de ambiente
+Copiar o `.env.example` para `.env`.
+
+## Como executar
+make up-build → sobe o banco e a API
+Make ps → status dos containers
+make down → derruba os containers
+
+
+## Testes e qualidade
+make test → testes (Pytest)
+make lint / make format → Ruff
+A CI roda lint, formatação e testes a cada push no backend
+
+
