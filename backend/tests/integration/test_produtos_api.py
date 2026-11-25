@@ -1,4 +1,6 @@
 import pytest
+from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 
 ARROZ = {
     "nome": "Arroz",
@@ -139,6 +141,26 @@ def test_excluir_produto_zerado(client, arroz):
 
     assert response.status_code == 204
     assert client.get(f"/produtos/{arroz['id']}").status_code == 404
+
+
+def test_produto_e_movimentacao_ficam_gravados_no_banco(client, arroz, engine):
+    movimentar(client, arroz["id"], "entrada", 7)
+
+    with engine.connect() as conexao:
+        quantidade = conexao.scalar(
+            text("SELECT quantidade FROM produtos WHERE id = :id"), {"id": arroz["id"]}
+        )
+        movimentacoes = conexao.scalar(text("SELECT count(*) FROM movimentacoes"))
+
+    assert quantidade == 7
+    assert movimentacoes == 1
+
+
+def test_banco_recusa_quantidade_negativa_mesmo_fora_da_api(client, arroz, engine):
+    with pytest.raises(IntegrityError), engine.begin() as conexao:
+        conexao.execute(
+            text("UPDATE produtos SET quantidade = -1 WHERE id = :id"), {"id": arroz["id"]}
+        )
 
 
 def test_resumo_do_estoque(client, arroz):

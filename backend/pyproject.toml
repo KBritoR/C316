@@ -8,7 +8,10 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "fastapi (>=0.141.1,<0.142.0)",
-    "uvicorn (>=0.52.4,<0.53.0)"
+    "uvicorn (>=0.52.4,<0.53.0)",
+    "sqlalchemy (>=2.1.9,<3.0.0)",
+    "psycopg[binary] (>=3.3.9,<4.0.0)",
+    "alembic (>=1.20.1,<2.0.0)"
 ]
 
 [tool.poetry]
@@ -36,3 +39,7 @@ line-length = 100
 select = ["E", "F", "I", "B", "UP"]
 # B008: Depends(...) como valor padrao e o jeito padrao do FastAPI de injetar dependencias
 ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+# a pasta backend/alembic (migrations) faria o Ruff achar que "alembic" e codigo nosso
+known-third-party = ["alembic"]

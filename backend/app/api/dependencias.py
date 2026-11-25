@@ -1,13 +1,11 @@
-from app.repositories.memoria import (
-    BancoMemoria,
-    MovimentacaoRepositoryMemoria,
-    ProdutoRepositoryMemoria,
-)
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+from app.database.session import get_db
+from app.repositories.movimentacao_repository import MovimentacaoRepository
+from app.repositories.produto_repository import ProdutoRepository
 from app.services.produto_service import ProdutoService
 
-# Nesta etapa os dados ficam em memoria (somem ao reiniciar a API).
-_banco = BancoMemoria()
 
-
-def get_produto_service() -> ProdutoService:
-    return ProdutoService(ProdutoRepositoryMemoria(_banco), MovimentacaoRepositoryMemoria(_banco))
+def get_produto_service(db: Session = Depends(get_db)) -> ProdutoService:
+    return ProdutoService(ProdutoRepository(db), MovimentacaoRepository(db))

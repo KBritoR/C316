@@ -1,3 +1,9 @@
+"""Repositorios em memoria usados so nos testes unitarios do service.
+
+Implementam a mesma interface dos repositorios com SQLAlchemy, para testar
+as regras de negocio sem precisar de PostgreSQL.
+"""
+
 from datetime import UTC, datetime
 
 from app.models.estoque import Movimentacao, Produto
@@ -21,7 +27,7 @@ class BancoMemoria:
         return novo_id
 
 
-class ProdutoRepositoryMemoria:
+class ProdutoRepositoryFake:
     def __init__(self, banco: BancoMemoria) -> None:
         self.banco = banco
 
@@ -35,6 +41,9 @@ class ProdutoRepositoryMemoria:
 
     def obter(self, produto_id: int) -> Produto | None:
         return self.banco.produtos.get(produto_id)
+
+    def obter_para_atualizar(self, produto_id: int) -> Produto | None:
+        return self.obter(produto_id)
 
     def obter_por_nome(self, nome: str) -> Produto | None:
         return next(
@@ -58,7 +67,7 @@ class ProdutoRepositoryMemoria:
         }
 
 
-class MovimentacaoRepositoryMemoria:
+class MovimentacaoRepositoryFake:
     def __init__(self, banco: BancoMemoria) -> None:
         self.banco = banco
 
