@@ -25,6 +25,7 @@ services:
       - "${API_PORT:-8000}:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-estoque}:${POSTGRES_PASSWORD:-estoque}@db:5432/${POSTGRES_DB:-estoque}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
     depends_on:
       db:
         condition: service_healthy

@@ -1,9 +1,13 @@
 .PHONY: install run test test-unit test-integration lint format format-check \
 	db-up db-upgrade db-downgrade db-migration db-current db-history \
-	up-build up down ps logs logs-api help
+	up-build up down ps logs logs-api \
+	frontend-install frontend-dev frontend-lint frontend-format frontend-format-check \
+	frontend-check frontend-test frontend-build help
 
 BACKEND_DIR = backend
+FRONTEND_DIR = frontend
 POETRY = poetry
+NPM = npm --prefix $(FRONTEND_DIR)
 
 # ---------- Backend (local) ----------
 
@@ -72,6 +76,32 @@ logs:
 logs-api:
 	docker compose logs -f api
 
+# ---------- Frontend (React + Vite) ----------
+
+frontend-install:
+	$(NPM) ci
+
+frontend-dev:
+	$(NPM) run dev
+
+frontend-lint:
+	$(NPM) run lint
+
+frontend-format:
+	$(NPM) run format
+
+frontend-format-check:
+	$(NPM) run format:check
+
+frontend-check:
+	$(NPM) run lint && $(NPM) run format:check
+
+frontend-test:
+	$(NPM) run test
+
+frontend-build:
+	$(NPM) run build
+
 help:
 	@echo "Comandos disponiveis:"
 	@echo "  make install          - instala as dependencias do backend (Poetry)"
@@ -94,4 +124,12 @@ help:
 	@echo "  make ps               - mostra o status dos containers"
 	@echo "  make logs             - acompanha os logs de todos os servicos"
 	@echo "  make logs-api         - acompanha os logs da API"
+	@echo "  make frontend-install - instala as dependencias do frontend (npm ci)"
+	@echo "  make frontend-dev     - roda o frontend em http://localhost:5173 (Vite)"
+	@echo "  make frontend-lint    - verifica o codigo do frontend com o Biome"
+	@echo "  make frontend-format  - formata o codigo do frontend com o Biome"
+	@echo "  make frontend-format-check - verifica a formatacao do frontend"
+	@echo "  make frontend-check   - lint + verificacao de formatacao do frontend"
+	@echo "  make frontend-test    - testes do frontend (Vitest + Testing Library)"
+	@echo "  make frontend-build   - build de producao do frontend"
 	@echo "  make help             - mostra esta mensagem"
