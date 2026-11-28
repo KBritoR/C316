@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Variaveis de ambiente (segredos nao vao para o repositorio)
+.env
+
+# Materiais da disciplina (enunciado e transcricao), nao fazem parte do codigo
+PROJETO FINAL/

@@ -1,0 +1,68 @@
+name: CI Backend
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+
+jobs:
+  backend:
+    name: Ruff e Pytest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # PostgreSQL de servico para os testes de integracao
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: estoque
+          POSTGRES_PASSWORD: estoque
+          POSTGRES_DB: estoque_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U estoque"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://estoque:estoque@localhost:5432/estoque_test
+
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Instalar Poetry
+        run: pipx install poetry
+
+      - name: Cache das dependencias
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ hashFiles('backend/poetry.lock') }}
+
+      - name: Instalar dependencias
+        run: poetry install --no-interaction
+
+      - name: Lint (Ruff)
+        run: poetry run ruff check .
+
+      - name: Verificar formatacao (Ruff)
+        run: poetry run ruff format --check .
+
+      - name: Testes (Pytest)
+        run: poetry run pytest -v
